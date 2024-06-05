@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ceres919/go-webdav"
+	"github.com/ceres919/go-webdav/internal"
 	"github.com/emersion/go-ical"
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/internal"
 )
 
 // DiscoverContextURL performs a DNS-based CardDAV service discovery as
