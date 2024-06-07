@@ -21,7 +21,8 @@ var (
 	GetLastModifiedName  = xml.Name{Namespace, "getlastmodified"}
 	GetETagName          = xml.Name{Namespace, "getetag"}
 
-	CurrentUserPrincipalName = xml.Name{Namespace, "current-user-principal"}
+	CurrentUserPrincipalName    = xml.Name{Namespace, "current-user-principal"}
+	CurrentUserPrivilegeSetName = xml.Name{Namespace, "current-user-privilege-set"}
 )
 
 type Status struct {
@@ -330,6 +331,33 @@ func (t *ResourceType) Is(name xml.Name) bool {
 		}
 	}
 	return false
+}
+
+type CurrentUserPrivilegeSet struct {
+	XMLName xml.Name      `xml:"DAV: current-user-privilege-set"`
+	Raw     []RawXMLValue `xml:",any"`
+}
+
+var PrivilegeName = xml.Name{Namespace, "privilege"}
+
+//type Privilege struct {
+//	XMLName string      `xml:"DAV: privilege"`
+//	Raw     RawXMLValue `xml:",any"`
+//}
+
+func NewCurrentUserPrivilegeSet() *CurrentUserPrivilegeSet {
+	names := make([]xml.Name, 3)
+	for i, _ := range names {
+		names[i] = PrivilegeName
+	}
+
+	p := &CurrentUserPrivilegeSet{Raw: xmlNamesToRaw(names)}
+
+	types := [3]string{"all", "read", "write"}
+	for i, privilege := range p.Raw {
+		privilege.out = NewRawXMLElement(xml.Name{Namespace, types[i]}, nil, nil)
+	}
+	return p
 }
 
 var CollectionName = xml.Name{Namespace, "collection"}
