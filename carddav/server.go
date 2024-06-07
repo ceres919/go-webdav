@@ -483,8 +483,7 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 		internal.ResourceTypeName: func(*internal.RawXMLValue) (interface{}, error) {
 			return internal.NewResourceType(internal.CollectionName), nil
 		},
-		//TODO
-		internal.ResourceTypeName: func(*internal.RawXMLValue) (interface{}, error) {
+		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
 			return internal.NewCurrentUserPrivilegeSet(), nil
 		},
 	}
