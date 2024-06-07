@@ -354,8 +354,15 @@ func NewCurrentUserPrivilegeSet() *CurrentUserPrivilegeSet {
 	p := &CurrentUserPrivilegeSet{Raw: xmlNamesToRaw(names)}
 
 	types := [3]string{"all", "read", "write"}
-	for i, privilege := range p.Raw {
-		privilege.out = NewRawXMLElement(xml.Name{Namespace, types[i]}, nil, nil)
+	for i, _ := range p.Raw {
+
+		tp := NewRawXMLElement(xml.Name{Namespace, types[i]}, nil, nil)
+		raw, err := EncodeRawXMLElement(tp)
+		if err != nil {
+			return nil
+		}
+		p.Raw[i] = *raw
+
 	}
 	return p
 }
