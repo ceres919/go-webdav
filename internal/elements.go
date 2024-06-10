@@ -334,37 +334,27 @@ func (t *ResourceType) Is(name xml.Name) bool {
 }
 
 type CurrentUserPrivilegeSet struct {
-	XMLName xml.Name      `xml:"DAV: current-user-privilege-set"`
-	Raw     []RawXMLValue `xml:",any"`
+	XMLName    xml.Name    `xml:"DAV: current-user-privilege-set"`
+	Privileges []Privilege `xml:"privilege,omitempty"`
 }
 
 var PrivilegeName = xml.Name{Namespace, "privilege"}
 
-//type Privilege struct {
-//	XMLName string      `xml:"DAV: privilege"`
-//	Raw     RawXMLValue `xml:",any"`
-//}
+type Privilege struct {
+	XMLName string      `xml:"DAV: privilege"`
+	Raw     RawXMLValue `xml:",any"`
+}
 
 func NewCurrentUserPrivilegeSet() *CurrentUserPrivilegeSet {
-	names := make([]xml.Name, 3)
-	for i, _ := range names {
-		names[i] = PrivilegeName
-	}
+	ps := &CurrentUserPrivilegeSet{Privileges: make([]Privilege, 11)}
 
-	p := &CurrentUserPrivilegeSet{Raw: xmlNamesToRaw(names)}
+	types := [11]string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
 
-	types := [3]string{"all", "read", "write"}
-	for i, _ := range p.Raw {
-
+	for i, _ := range ps.Privileges {
 		tp := NewRawXMLElement(xml.Name{Namespace, types[i]}, nil, nil)
-		raw, err := EncodeRawXMLElement(tp)
-		if err != nil {
-			return nil
-		}
-		p.Raw[i] = *raw
-
+		ps.Privileges[i].Raw = RawXMLValue{tok: xml.StartElement{PrivilegeName, nil}, children: nil, out: tp}
 	}
-	return p
+	return ps
 }
 
 var CollectionName = xml.Name{Namespace, "collection"}

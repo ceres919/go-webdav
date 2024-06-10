@@ -502,6 +502,9 @@ func (b *backend) propFindAddressBook(ctx context.Context, propfind *internal.Pr
 		internal.ResourceTypeName: func(*internal.RawXMLValue) (interface{}, error) {
 			return internal.NewResourceType(internal.CollectionName, addressBookName), nil
 		},
+		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
+			return internal.NewCurrentUserPrivilegeSet(), nil
+		},
 		supportedAddressDataName: func(*internal.RawXMLValue) (interface{}, error) {
 			return &supportedAddressData{
 				Types: []addressDataType{
