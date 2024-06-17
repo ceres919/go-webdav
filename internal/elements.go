@@ -345,13 +345,13 @@ type Privilege struct {
 	Raw     RawXMLValue `xml:",any"`
 }
 
-func NewCurrentUserPrivilegeSet() *CurrentUserPrivilegeSet {
+func NewCurrentUserPrivilegeSet(privileges []string) *CurrentUserPrivilegeSet {
 	ps := &CurrentUserPrivilegeSet{Privileges: make([]Privilege, 11)}
 
-	types := [11]string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
+	//types := [11]string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
 
 	for i, _ := range ps.Privileges {
-		tp := NewRawXMLElement(xml.Name{Namespace, types[i]}, nil, nil)
+		tp := NewRawXMLElement(xml.Name{Namespace, privileges[i]}, nil, nil)
 		ps.Privileges[i].Raw = RawXMLValue{tok: xml.StartElement{PrivilegeName, nil}, children: nil, out: tp}
 	}
 	return ps

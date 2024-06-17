@@ -37,7 +37,7 @@ type Backend interface {
 	QueryAddressObjects(ctx context.Context, path string, query *AddressBookQuery) ([]AddressObject, error)
 	PutAddressObject(ctx context.Context, path string, card vcard.Card, opts *PutAddressObjectOptions) (*AddressObject, error)
 	DeleteAddressObject(ctx context.Context, path string) error
-
+	GetCurrentUserAddressBookPrivilege(ctx context.Context, ab *AddressBook) ([]string, error)
 	webdav.UserPrincipalBackend
 }
 
@@ -475,6 +475,8 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 		return nil, err
 	}
 
+	privileges := []string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
+
 	// TODO anything else to return here?
 	props := map[xml.Name]internal.PropFindFunc{
 		internal.CurrentUserPrincipalName: func(*internal.RawXMLValue) (interface{}, error) {
@@ -484,13 +486,17 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 			return internal.NewResourceType(internal.CollectionName), nil
 		},
 		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
-			return internal.NewCurrentUserPrivilegeSet(), nil
+			return internal.NewCurrentUserPrivilegeSet(privileges), nil
 		},
 	}
 	return internal.NewPropFindResponse(homeSetPath, propfind, props)
 }
 
 func (b *backend) propFindAddressBook(ctx context.Context, propfind *internal.PropFind, ab *AddressBook) (*internal.Response, error) {
+	privileges, err := b.Backend.GetCurrentUserAddressBookPrivilege(ctx, ab)
+	if err != nil {
+		return nil, err
+	}
 	props := map[xml.Name]internal.PropFindFunc{
 		internal.CurrentUserPrincipalName: func(*internal.RawXMLValue) (interface{}, error) {
 			path, err := b.Backend.CurrentUserPrincipal(ctx)
@@ -503,7 +509,7 @@ func (b *backend) propFindAddressBook(ctx context.Context, propfind *internal.Pr
 			return internal.NewResourceType(internal.CollectionName, addressBookName), nil
 		},
 		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
-			return internal.NewCurrentUserPrivilegeSet(), nil
+			return internal.NewCurrentUserPrivilegeSet(privileges), nil
 		},
 		supportedAddressDataName: func(*internal.RawXMLValue) (interface{}, error) {
 			return &supportedAddressData{
