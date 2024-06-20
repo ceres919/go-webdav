@@ -40,7 +40,7 @@ type Backend interface {
 	QueryCalendarObjects(ctx context.Context, path string, query *CalendarQuery) ([]CalendarObject, error)
 	PutCalendarObject(ctx context.Context, path string, calendar *ical.Calendar, opts *PutCalendarObjectOptions) (*CalendarObject, error)
 	DeleteCalendarObject(ctx context.Context, path string) error
-
+	GetCurrentUserAddressBookPrivilege(ctx context.Context, calendar *Calendar) ([]string, error)
 	webdav.UserPrincipalBackend
 }
 
@@ -509,6 +509,8 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 		return nil, err
 	}
 
+	privileges := []string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
+
 	// TODO anything else to return here?
 	props := map[xml.Name]internal.PropFindFunc{
 		internal.CurrentUserPrincipalName: func(*internal.RawXMLValue) (interface{}, error) {
@@ -517,11 +519,19 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 		internal.ResourceTypeName: func(*internal.RawXMLValue) (interface{}, error) {
 			return internal.NewResourceType(internal.CollectionName), nil
 		},
+		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
+			return internal.NewCurrentUserPrivilegeSet(privileges), nil
+		},
 	}
 	return internal.NewPropFindResponse(homeSetPath, propfind, props)
 }
 
 func (b *backend) propFindCalendar(ctx context.Context, propfind *internal.PropFind, cal *Calendar) (*internal.Response, error) {
+	privileges, err := b.Backend.GetCurrentUserAddressBookPrivilege(ctx, cal)
+	if err != nil {
+		return nil, err
+	}
+
 	props := map[xml.Name]internal.PropFindFunc{
 		internal.CurrentUserPrincipalName: func(*internal.RawXMLValue) (interface{}, error) {
 			path, err := b.Backend.CurrentUserPrincipal(ctx)
@@ -532,6 +542,9 @@ func (b *backend) propFindCalendar(ctx context.Context, propfind *internal.PropF
 		},
 		internal.ResourceTypeName: func(*internal.RawXMLValue) (interface{}, error) {
 			return internal.NewResourceType(internal.CollectionName, calendarName), nil
+		},
+		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
+			return internal.NewCurrentUserPrivilegeSet(privileges), nil
 		},
 		calendarDescriptionName: func(*internal.RawXMLValue) (interface{}, error) {
 			return &calendarDescription{Description: cal.Description}, nil
