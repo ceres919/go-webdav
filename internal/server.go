@@ -99,6 +99,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			err = h.handlePropfind(w, r)
 		case "PROPPATCH":
 			err = h.handleProppatch(w, r)
+		case "MKCALENDAR":
+			fallthrough
 		case "MKCOL":
 			err = h.Backend.Mkcol(r)
 			if err == nil {
