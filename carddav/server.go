@@ -37,7 +37,7 @@ type Backend interface {
 	QueryAddressObjects(ctx context.Context, path string, query *AddressBookQuery) ([]AddressObject, error)
 	PutAddressObject(ctx context.Context, path string, card vcard.Card, opts *PutAddressObjectOptions) (*AddressObject, error)
 	DeleteAddressObject(ctx context.Context, path string) error
-	GetCurrentUserAddressBookPrivilege(ctx context.Context, ab *AddressBook) ([]string, error)
+	GetAddressBookPrivileges(ctx context.Context, ab *AddressBook) ([]string, error)
 	webdav.UserPrincipalBackend
 }
 
@@ -493,7 +493,7 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 }
 
 func (b *backend) propFindAddressBook(ctx context.Context, propfind *internal.PropFind, ab *AddressBook) (*internal.Response, error) {
-	privileges, err := b.Backend.GetCurrentUserAddressBookPrivilege(ctx, ab)
+	privileges, err := b.Backend.GetAddressBookPrivileges(ctx, ab)
 	if err != nil {
 		return nil, err
 	}

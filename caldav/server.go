@@ -40,7 +40,7 @@ type Backend interface {
 	QueryCalendarObjects(ctx context.Context, path string, query *CalendarQuery) ([]CalendarObject, error)
 	PutCalendarObject(ctx context.Context, path string, calendar *ical.Calendar, opts *PutCalendarObjectOptions) (*CalendarObject, error)
 	DeleteCalendarObject(ctx context.Context, path string) error
-	GetCurrentUserAddressBookPrivilege(ctx context.Context, calendar *Calendar) ([]string, error)
+	GetCalendarPrivileges(ctx context.Context, calendar *Calendar) ([]string, error)
 	webdav.UserPrincipalBackend
 }
 
@@ -527,7 +527,7 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 }
 
 func (b *backend) propFindCalendar(ctx context.Context, propfind *internal.PropFind, cal *Calendar) (*internal.Response, error) {
-	privileges, err := b.Backend.GetCurrentUserAddressBookPrivilege(ctx, cal)
+	privileges, err := b.Backend.GetCalendarPrivileges(ctx, cal)
 	if err != nil {
 		return nil, err
 	}
