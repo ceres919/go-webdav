@@ -230,14 +230,9 @@ func (r *reportReq) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 type mkcalendarReq struct {
-	XMLName xml.Name `xml:"DAV: mkcalendar"`
-	// TODO this could theoretically contain all addressbook properties?
-}
-
-type mkcolReq struct {
-	XMLName      xml.Name              `xml:"DAV: mkcol"`
+	XMLName      xml.Name              `xml:"DAV: mkcalendar"`
 	ResourceType internal.ResourceType `xml:"set>prop>resourcetype"`
 	DisplayName  string                `xml:"set>prop>displayname"`
-	mkcalendarReq
+	Description  calendarDescription   `xml:"set>prop>calendar-description"`
 	// TODO this could theoretically contain all addressbook properties?
 }

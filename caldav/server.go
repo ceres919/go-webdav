@@ -735,18 +735,12 @@ func (b *backend) Mkcol(r *http.Request) error {
 	}
 
 	if !internal.IsRequestBodyEmpty(r) {
-		var m mkcolReq
-		switch r.Method {
-		case "MKCALENDAR":
-			if err := internal.DecodeXMLRequest(r, &m.mkcalendarReq); err != nil {
-				return internal.HTTPErrorf(http.StatusBadRequest, "carddav: error parsing mkcol request: %s", err.Error())
-			}
-		default:
-			if err := internal.DecodeXMLRequest(r, &m); err != nil {
-				return internal.HTTPErrorf(http.StatusBadRequest, "carddav: error parsing mkcol request: %s", err.Error())
-			}
-		}
+		var m mkcalendarReq
 
+		if err := internal.DecodeXMLRequest(r, &m); err != nil {
+			return internal.HTTPErrorf(http.StatusBadRequest, "carddav: error parsing mkcalendar request: %s", err.Error())
+		}
+		
 		if !m.ResourceType.Is(internal.CollectionName) || !m.ResourceType.Is(calendarName) {
 			return internal.HTTPErrorf(http.StatusBadRequest, "carddav: unexpected resource type")
 		}
