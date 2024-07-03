@@ -30,18 +30,17 @@ type PutCalendarObjectOptions struct {
 // Backend is a CalDAV server backend.
 type Backend interface {
 	CalendarHomeSetPath(ctx context.Context) (string, error)
-
+	GetCurrentPrincipalPrivileges(ctx context.Context) []string
+	GetCalendarPrivileges(ctx context.Context, calendar *Calendar) []string
 	CreateCalendar(ctx context.Context, calendar *Calendar) error
 	ListCalendars(ctx context.Context) ([]Calendar, error)
 	GetCalendar(ctx context.Context, path string) (*Calendar, error)
-
 	GetCalendarObject(ctx context.Context, path string, req *CalendarCompRequest) (*CalendarObject, error)
 	ListCalendarObjects(ctx context.Context, path string, req *CalendarCompRequest) ([]CalendarObject, error)
 	QueryCalendarObjects(ctx context.Context, path string, query *CalendarQuery) ([]CalendarObject, error)
 	PutCalendarObject(ctx context.Context, path string, calendar *ical.Calendar, opts *PutCalendarObjectOptions) (*CalendarObject, error)
 	DeleteCalendarObject(ctx context.Context, path string) error
-	GetPrivileges(ctx context.Context) []string
-	GetCalendarPrivileges(ctx context.Context, calendar *Calendar) []string
+
 	webdav.UserPrincipalBackend
 }
 
@@ -519,7 +518,7 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 			return internal.NewResourceType(internal.CollectionName), nil
 		},
 		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
-			return internal.NewCurrentUserPrivilegeSet(b.Backend.GetPrivileges(ctx)), nil
+			return internal.NewCurrentUserPrivilegeSet(b.Backend.GetCurrentPrincipalPrivileges(ctx)), nil
 		},
 	}
 	return internal.NewPropFindResponse(homeSetPath, propfind, props)
@@ -740,7 +739,7 @@ func (b *backend) Mkcol(r *http.Request) error {
 		if err := internal.DecodeXMLRequest(r, &m); err != nil {
 			return internal.HTTPErrorf(http.StatusBadRequest, "carddav: error parsing mkcalendar request: %s", err.Error())
 		}
-		
+
 		if !m.ResourceType.Is(internal.CollectionName) || !m.ResourceType.Is(calendarName) {
 			return internal.HTTPErrorf(http.StatusBadRequest, "carddav: unexpected resource type")
 		}

@@ -346,9 +346,7 @@ type Privilege struct {
 }
 
 func NewCurrentUserPrivilegeSet(privileges []string) *CurrentUserPrivilegeSet {
-	ps := &CurrentUserPrivilegeSet{Privileges: make([]Privilege, 11)}
-
-	//types := [11]string{"all", "read", "write", "write-properties", "write-content", "unlock", "bind", "unbind", "write-acl", "read-acl", "read-current-user-privilege-set"}
+	ps := &CurrentUserPrivilegeSet{Privileges: make([]Privilege, len(privileges))}
 
 	for i, _ := range ps.Privileges {
 		tp := NewRawXMLElement(xml.Name{Namespace, privileges[i]}, nil, nil)

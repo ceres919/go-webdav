@@ -28,6 +28,8 @@ type PutAddressObjectOptions struct {
 // Backend is a CardDAV server backend.
 type Backend interface {
 	AddressBookHomeSetPath(ctx context.Context) (string, error)
+	GetCurrentPrincipalPrivileges(ctx context.Context) []string
+	GetAddressBookPrivileges(ctx context.Context, ab *AddressBook) []string
 	ListAddressBooks(ctx context.Context) ([]AddressBook, error)
 	GetAddressBook(ctx context.Context, path string) (*AddressBook, error)
 	CreateAddressBook(ctx context.Context, addressBook *AddressBook) error
@@ -37,8 +39,7 @@ type Backend interface {
 	QueryAddressObjects(ctx context.Context, path string, query *AddressBookQuery) ([]AddressObject, error)
 	PutAddressObject(ctx context.Context, path string, card vcard.Card, opts *PutAddressObjectOptions) (*AddressObject, error)
 	DeleteAddressObject(ctx context.Context, path string) error
-	GetPrivileges(ctx context.Context) []string
-	GetAddressBookPrivileges(ctx context.Context, ab *AddressBook) []string
+
 	webdav.UserPrincipalBackend
 }
 
@@ -485,7 +486,7 @@ func (b *backend) propFindHomeSet(ctx context.Context, propfind *internal.PropFi
 			return internal.NewResourceType(internal.CollectionName), nil
 		},
 		internal.CurrentUserPrivilegeSetName: func(*internal.RawXMLValue) (interface{}, error) {
-			return internal.NewCurrentUserPrivilegeSet(b.Backend.GetPrivileges(ctx)), nil
+			return internal.NewCurrentUserPrivilegeSet(b.Backend.GetCurrentPrincipalPrivileges(ctx)), nil
 		},
 	}
 	return internal.NewPropFindResponse(homeSetPath, propfind, props)
